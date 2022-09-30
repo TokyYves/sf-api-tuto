@@ -9,13 +9,20 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post as MetadataPost;
 use ApiPlatform\Metadata\Put;
+use App\Controller\PostController;
 use App\Repository\PostRepository;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ApiResource()]
+#[ApiResource(operations: [
+    new Get(),
+    new Put(
+        name: 'put_updated_at', 
+        uriTemplate: '/post/{id}/updated-at', 
+        controller: PostController::class
+    )
+])]
 #[GetCollection(normalizationContext:["groups"=>"read:posts"])]
 #[Get(normalizationContext: ['groups' => ['read:post']])]
 #[Put(),Patch(),MetadataPost(),Delete()]

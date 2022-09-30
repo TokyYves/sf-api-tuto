@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
@@ -23,8 +27,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[GetCollection(normalizationContext:["groups"=>"read:users"])]
 #[Get(normalizationContext: ['groups' => ['read:user']])]
 #[Put(),Patch(),Pst(),Delete()]
-
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[ApiFilter(SearchFilter::class, properties: ['email' => 'partial'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt'])]
+#[ApiFilter(BooleanFilter::class, properties: ['status'])]
+class User implements UserInterface, PasswordAuthenticatedUserInterface 
 {
 
     use Timestampable;
@@ -38,20 +44,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180, unique: true)]
     #[Groups(['read:users','read:user','read:post'])]
     private ?string $email = null;
-
+    
     #[ORM\Column]
     private array $roles = [];
-
+    
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
     private ?string $password = null;
-
+    
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Post::class)]
     #[Groups(['read:user'])]
     private Collection $posts;
-
+    
+    #[ORM\Column(length: 255)]
+    #[Groups(['read:users','read:user','read:post'])]
+    private ?string $name = null;
+    
+    #[ORM\Column]
+    #[Groups(['read:users','read:user','read:post'])]
+    private ?bool $status = null;
+    
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -155,6 +169,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $post->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function isStatus(): ?bool
+    {
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

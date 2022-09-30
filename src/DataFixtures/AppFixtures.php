@@ -27,6 +27,8 @@ class AppFixtures extends Fixture
             $hashPass = $this->userPasswordHasherInterface->hashPassword($user,'password');
             
             $user->setEmail($faker->email())
+                ->setName($faker->name())
+                ->setStatus($faker->boolean())
                 ->setPassword($hashPass);
 
             $manager->persist($user);
@@ -35,7 +37,7 @@ class AppFixtures extends Fixture
                 $post = new Post();
 
                 $post->setAuthor($user)
-                    ->setTitle($faker->name())
+                    ->setTitle($faker->country())
                     ->setDescription($faker->paragraph());
                 $manager->persist($post);
             }
